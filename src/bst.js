@@ -239,7 +239,6 @@ function tree(unsortedArray) {
   const rebalance = () => {
     clear();
     inOrder();
-    // unsortedArray = traversed;
     root = buildtree(traversed);
   };
 
