@@ -10,11 +10,7 @@ function tree(unsortedArray) {
     return unique.sort((a, b) => a - b);
   };
 
-  const buildtree = (
-    array = processArray(unsortedArray),
-    start = 0,
-    end = array.length - 1
-  ) => {
+  const buildtree = (array, start = 0, end = array.length - 1) => {
     if (start > end) {
       return null;
     } else {
@@ -26,7 +22,7 @@ function tree(unsortedArray) {
     }
   };
 
-  let root = buildtree();
+  let root = buildtree(processArray(unsortedArray));
 
   const prettyPrint = (node = root, prefix = "", isLeft = true) => {
     if (node === null) {
@@ -107,23 +103,145 @@ function tree(unsortedArray) {
     }
   };
 
-  const levelOrder = (callback) => {
-    
+  let traversed = [];
+
+  const clear = () => {
+    traversed = [];
   };
 
-  const inOrder = (callback) => {};
+  const storeInTraversed = (node) => {
+    traversed.push(node.data);
+  };
 
-  const preOrder = (callback) => {};
+  const levelOrder = (currentNode = root) => {
+    let queue = [];
+    clear();
 
-  const postOrder = (callback) => {};
+    if (currentNode !== null) {
+      queue.push(currentNode);
+    }
 
-  const height = (node) => {};
+    while (queue.length > 0) {
+      let node = queue.shift();
 
-  const depth = (node) => {};
+      storeInTraversed(node);
 
-  const isBalanced = () => {};
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+    return traversed;
+  };
 
-  const rebalance = () => {};
+  const preOrder = (currentNode = root) => {
+    clear();
+    const traverse = (node) => {
+      if (node === null) return;
+
+      storeInTraversed(node);
+      traverse(node.left);
+      traverse(node.right);
+    };
+    traverse(currentNode);
+  };
+
+  const inOrder = (currentNode = root) => {
+    clear();
+    const traverse = (node) => {
+      if (node === null) return;
+
+      traverse(node.left);
+      storeInTraversed(node);
+      traverse(node.right);
+    };
+    traverse(currentNode);
+  };
+
+  const postOrder = (currentNode = root) => {
+    clear();
+    const traverse = (node) => {
+      if (node === null) return;
+      traverse(node.left);
+      traverse(node.right);
+      storeInTraversed(node);
+    };
+    traverse(currentNode);
+  };
+
+  const heightOfNode = (node) => {
+    if (node === null) {
+      return -1;
+    }
+    let leftHeight = heightOfNode(node.left);
+    let rightHeight = heightOfNode(node.right);
+    return Math.max(leftHeight, rightHeight) + 1;
+  };
+
+  const height = (value) => {
+    const node = find(value);
+    if (node === null) {
+      throw new Error("Node not found in the tree.");
+    }
+    return heightOfNode(node);
+  };
+
+  const depthOfNode = (node, currentNode = root, currentDepth = 0) => {
+    if (currentNode === null) {
+      return -1;
+    }
+
+    if (currentNode === node) {
+      return currentDepth;
+    }
+
+    let leftDepth = depthOfNode(node, currentNode.left, currentDepth + 1);
+    if (leftDepth !== -1) {
+      return leftDepth;
+    }
+
+    let rightDepth = depthOfNode(node, currentNode.right, currentDepth + 1);
+    return rightDepth;
+  };
+
+  const depth = (value) => {
+    const node = find(value);
+    if (node === null) {
+      throw new Error("Node not found in the tree.");
+    }
+    return depthOfNode(node);
+  };
+
+  const isBalanced = (node = root) => {
+    const checkBalance = (currentNode) => {
+      if (currentNode === null) {
+        return { height: 0, balanced: true };
+      }
+
+      let left = checkBalance(currentNode.left);
+      if (!left.balanced) {
+        return { height: 0, balanced: false };
+      }
+
+      let right = checkBalance(currentNode.right);
+      if (!right.balanced) {
+        return { height: 0, balanced: false };
+      }
+
+      let heightDiff = Math.abs(left.height - right.height);
+      let balanced = heightDiff <= 1;
+      let height = Math.max(left.height, right.height) + 1;
+
+      return { height, balanced };
+    };
+
+    return checkBalance(node).balanced;
+  };
+
+  const rebalance = () => {
+    clear();
+    inOrder();
+    // unsortedArray = traversed;
+    root = buildtree(traversed);
+  };
 
   return {
     buildtree,
@@ -131,8 +249,19 @@ function tree(unsortedArray) {
     insert,
     deleteItem,
     find,
+    levelOrder,
+    preOrder,
+    inOrder,
+    postOrder,
+    height,
+    depth,
+    isBalanced,
+    rebalance,
     get root() {
       return root;
+    },
+    get traversed() {
+      return traversed;
     },
   };
 }
